@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import os
 import sys
 import json
 from osgeo import ogr, osr
@@ -108,6 +109,8 @@ def main(argv=None):
 	saveToGeoJSON('points.json',points)
 	saveToGeoJSON('lines.json',lines)
 	saveToGeoJSON('intersection_points.json',intersection_points)
+
+	os.system("topojson -o all_features_topo.json points.json lines.json intersection_points.json");
 
 if __name__ == "__main__":
     sys.exit(main())

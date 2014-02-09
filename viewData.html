@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Testmap</title>
+  <meta charset="utf-8" />
+  <script src="http://cdn.leafletjs.com/leaflet-0.6.1/leaflet.js"></script>
+  <script src="http://d3js.org/d3.v3.min.js"></script>
+  <script src="http://d3js.org/topojson.v1.min.js"></script>
+  <style>
+  @import url(http://cdn.leafletjs.com/leaflet-0.6.1/leaflet.css);
+  </style>
+</head>
+<body>
+  <div id="map" style="width: 960px; height: 500px"></div>
+  <script>
+  var map = L.map('map').setView([43.55, -71.71], 7);
+  var toolserver = L.tileLayer('http://{s}.www.toolserver.org/tiles/bw-mapnik/{z}/{x}/{y}.png');
+  var stamen = L.tileLayer('http://{s}.tile.stamen.com/toner/{z}/{x}/{y}.png', {attribution: 'Add some attributes here!'}).addTo(map);
+  var baseLayers = {"stamen": stamen, "toolserver-mapnik":toolserver};
+
+  var overlays = {};
+
+  d3.json("all_features_topo.json", function(error, topology) {
+    var collection = topojson.feature(topology, topology.objects.lines);
+    var linesTopoJSON = [collection];
+    var geojson = L.geoJson(linesTopoJSON);
+    
+    overlays["geojson"] = geojson.addTo(map);
+ 
+    L.control.layers(baseLayers, overlays).addTo(map);
+
+      
+  })
+  </script>
+ </body>
+</html>
