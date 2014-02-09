@@ -21,15 +21,44 @@
   var overlays = {};
 
   d3.json("all_features_topo.json", function(error, topology) {
-    var collection = topojson.feature(topology, topology.objects.lines);
-    var linesTopoJSON = [collection];
-    var geojson = L.geoJson(linesTopoJSON);
-    
-    overlays["geojson"] = geojson.addTo(map);
- 
+    // add the lines to the map
+    var lines = topojson.feature(topology, topology.objects.lines);
+    var linesTopoJSON = [lines];
+    var geojsonLines = L.geoJson(linesTopoJSON).addTo(map);
+    overlays["lines"] = geojsonLines;
+
+    // add the points to the map
+    var points = topojson.feature(topology, topology.objects.points);
+    var pointMarkers_ = [];
+    points.features.forEach(function(d,i){
+      var coords = d.geometry.coordinates;
+      var circle = L.circle([coords[1], coords[0]], 500, {
+          color: 'red',
+          fillColor: '#f03',
+          fillOpacity: 0.5
+      });
+      pointMarkers_.push(circle)
+    })
+    var pointMarkers = L.layerGroup(pointMarkers_).addTo(map);
+    overlays["points"] = pointMarkers;
+
+    // add the intersection points to the map
+    var iPoints = topojson.feature(topology, topology.objects.intersection_points);
+    var iPointMarkers_ = [];
+    iPoints.features.forEach(function(d,i){
+      var coords = d.geometry.coordinates;
+      var circle = L.circle([coords[1], coords[0]], 500, {
+          color: 'green',
+          fillColor: '#30f',
+          fillOpacity: 0.5
+      });
+      iPointMarkers_.push(circle)
+    })
+    var iPointMarkers = L.layerGroup(iPointMarkers_).addTo(map);
+    overlays["iPoints"] = iPointMarkers;
+
     L.control.layers(baseLayers, overlays).addTo(map);
 
-      
   })
   </script>
  </body>

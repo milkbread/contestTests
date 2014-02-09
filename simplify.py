@@ -17,7 +17,7 @@ def transform(geom, epsg):
 
 	geom.Transform(transformation)
 	return geom
-	
+
 def readInput(data, transform_ = None):
 	geometries = []
 	for line in data.readlines():
@@ -85,14 +85,14 @@ def main(argv=None):
 		transform_ = argv[1]
 	except:
 		transform_ = None
-	
+
 	lines_input = open('lines_out.txt', 'r')
 	points_input = open('points_out.txt', 'r')
 
 	lines = readInput(lines_input, transform_)
 	points = readInput(points_input, transform_)
 
-	buffer_distance = 5000
+	buffer_distance = 0.05
 	intersection_points = []
 	count0 = 0
 	for line in lines:
@@ -114,4 +114,3 @@ def main(argv=None):
 
 if __name__ == "__main__":
     sys.exit(main())
-		
