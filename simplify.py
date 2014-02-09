@@ -5,25 +5,19 @@ import json
 from osgeo import ogr, osr
 from shapely.geometry import Point, LineString
 
-#to_replace1 = '<gml:LineString srsName="EPSG:54004" xmlns:gml="http://www.opengis.net/gml"><gml:coordinates decimal="." cs="," ts=" ">'
-#to_replace2 = "</gml:coordinates></gml:LineString>"
-
-lines_input = open('lines_out.txt', 'r')
-points_input = open('points_out.txt', 'r')
-
-def transform(geom):
+def transform(geom, epsg):
 	source = osr.SpatialReference()
-	source.ImportFromEPSG(54004)
+	source.ImportFromEPSG(int(epsg))
 
 	target = osr.SpatialReference()
 	target.ImportFromEPSG(4326)
 
-	transform = osr.CoordinateTransformation(source, target)
+	transformation = osr.CoordinateTransformation(source, target)
 
-	geom.Transform(transform)
+	geom.Transform(transformation)
 	return geom
 	
-def readInput(data):
+def readInput(data, transform_ = None):
 	geometries = []
 	for line in data.readlines():
 		# check if we have to remove two or three chars from line
@@ -31,8 +25,10 @@ def readInput(data):
 		# remove first 'index'-chars
 		gml_ = line[index_:]
 		# convert to ogr-geometry
-		test = transform(ogr.CreateGeometryFromGML(gml_))
-		ogr_geometry = test#ogr.CreateGeometryFromGML(gml_)
+		if transform_:
+			ogr_geometry = transform(ogr.CreateGeometryFromGML(gml_), transform_)
+		else:
+			ogr_geometry = ogr.CreateGeometryFromGML(gml_)
 		# convert to shapely-geometry
 		if ogr_geometry.GetGeometryType() == 1:
 			shapely_geometry = Point(ogr_geometry.GetX(),ogr_geometry.GetY())
@@ -44,23 +40,6 @@ def readInput(data):
 def getOnePointFromIntersection(intersection):
 	# ToDo:: replace this method with a more convenient
 	return intersection.representative_point()
-
-lines = readInput(lines_input)
-points = readInput(points_input)
-
-buffer_distance = 5000
-intersection_points = []
-count0 = 0
-for line in lines:
-	count = 0
-	for point in points:
-		#print 'Point: ', count, 'Line:', count0
-		buffered_point = point.buffer(buffer_distance)
-		if line.intersects(buffered_point):
-			intersection = line.intersection(buffered_point)
-			intersection_points.append(getOnePointFromIntersection(intersection))
-		count += 1
-	count0 += 1
 
 def saveToGeoJSON(filename, geometries):
 	featcoll_dummy = {
@@ -98,7 +77,38 @@ def saveToGeoJSON(filename, geometries):
 		file.write(json.dumps(featurecoll_geojson, indent=4))
 	file.close()
 
-saveToGeoJSON('points.json',points)
-saveToGeoJSON('lines.json',lines)
-saveToGeoJSON('intersection_points.json',intersection_points)
+def main(argv=None):
+	if argv is None:
+		argv = sys.argv
+	try:
+		transform_ = argv[1]
+	except:
+		transform_ = None
 	
+	lines_input = open('lines_out.txt', 'r')
+	points_input = open('points_out.txt', 'r')
+
+	lines = readInput(lines_input, transform_)
+	points = readInput(points_input, transform_)
+
+	buffer_distance = 5000
+	intersection_points = []
+	count0 = 0
+	for line in lines:
+		count = 0
+		for point in points:
+			#print 'Point: ', count, 'Line:', count0
+			buffered_point = point.buffer(buffer_distance)
+			if line.intersects(buffered_point):
+				intersection = line.intersection(buffered_point)
+				intersection_points.append(getOnePointFromIntersection(intersection))
+			count += 1
+		count0 += 1
+
+	saveToGeoJSON('points.json',points)
+	saveToGeoJSON('lines.json',lines)
+	saveToGeoJSON('intersection_points.json',intersection_points)
+
+if __name__ == "__main__":
+    sys.exit(main())
+		
