@@ -6,6 +6,23 @@ import json
 from osgeo import ogr, osr
 from shapely.geometry import Point, LineString
 
+from pyrtree import RTree, Rect
+
+def findCPointBySimpleBuffer(lines, points, buffer_distance=0):
+	intersection_points = []
+	count0 = 0
+	for line in lines:
+		count = 0
+		for point in points:
+			#print 'Point: ', count, 'Line:', count0
+			buffered_point = point.buffer(buffer_distance)
+			if line.intersects(buffered_point):
+				intersection = line.intersection(buffered_point)
+				intersection_points.append(getOnePointFromIntersection(intersection))
+			count += 1
+		count0 += 1
+	return intersection_points
+
 def transform(geom, epsg):
 	source = osr.SpatialReference()
 	source.ImportFromEPSG(int(epsg))
@@ -92,19 +109,35 @@ def main(argv=None):
 	lines = readInput(lines_input, transform_)
 	points = readInput(points_input, transform_)
 
-	buffer_distance = 0.05
-	intersection_points = []
-	count0 = 0
-	for line in lines:
-		count = 0
-		for point in points:
-			#print 'Point: ', count, 'Line:', count0
-			buffered_point = point.buffer(buffer_distance)
-			if line.intersects(buffered_point):
-				intersection = line.intersection(buffered_point)
-				intersection_points.append(getOnePointFromIntersection(intersection))
-			count += 1
-		count0 += 1
+	'''t = RTree()
+   	t.insert(some_kind_of_object,Rect(min_x,min_y,max_x,max_y))
+   	point_res = t.query_point( (x,y) )
+   	rect_res = t.query_rect( Rect(x,y,xx,yy) )'''
+
+   	t = RTree()
+   	for line_ in lines:
+   		#print dir(line_)
+   		#print line_.bounds
+   		t.insert(line_,Rect(line_.bounds[0],line_.bounds[1],line_.bounds[2],line_.bounds[3]))
+
+   	intersection_points = []
+   	for point_ in points:
+   		#print dir(point_)
+   		#print point_.x, point_.y
+   		#point_res = t.query_point( (point_.x,point_.y) )
+   		#print point_res
+   		real_point_res = [r.leaf_obj() for r in t.query_point( (point_.x,point_.y) ) if r.is_leaf()]
+   		#print real_point_res[0]
+   		distance = real_point_res[0].project(point_)
+   		buffered_point = point_.buffer(distance+1)
+   		if line_.intersects(buffered_point):
+   			intersection = line_.intersection(buffered_point)
+   			#print dir(intersection)
+   			intersection_point = intersection.interpolate(distance+1.5)
+   			intersection_points.append(intersection_point)
+
+
+	#intersection_points = findCPointBySimpleBuffer(lines, points, 0.05)
 
 	saveToGeoJSON('points.json',points)
 	saveToGeoJSON('lines.json',lines)

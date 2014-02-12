@@ -3,11 +3,11 @@
 <head>
   <title>Testmap</title>
   <meta charset="utf-8" />
-  <script src="http://cdn.leafletjs.com/leaflet-0.6.1/leaflet.js"></script>
-  <script src="http://d3js.org/d3.v3.min.js"></script>
-  <script src="http://d3js.org/topojson.v1.min.js"></script>
+  <script src="leaflet.js"></script>
+  <script src="d3.v3.min.js"></script>
+  <script src="topojson.v1.min.js"></script>
   <style>
-  @import url(http://cdn.leafletjs.com/leaflet-0.6.1/leaflet.css);
+  @import url(leaflet.css);
   </style>
 </head>
 <body>
@@ -25,7 +25,7 @@
     var lines = topojson.feature(topology, topology.objects.lines);
     var linesTopoJSON = [lines];
     var geojsonLines = L.geoJson(linesTopoJSON).addTo(map);
-    overlays["lines"] = geojsonLines;
+    overlays["Lines"] = geojsonLines;
 
     // add the points to the map
     var points = topojson.feature(topology, topology.objects.points);
@@ -40,7 +40,7 @@
       pointMarkers_.push(circle)
     })
     var pointMarkers = L.layerGroup(pointMarkers_).addTo(map);
-    overlays["points"] = pointMarkers;
+    overlays["Points - Input"] = pointMarkers;
 
     // add the intersection points to the map
     var iPoints = topojson.feature(topology, topology.objects.intersection_points);
@@ -49,13 +49,13 @@
       var coords = d.geometry.coordinates;
       var circle = L.circle([coords[1], coords[0]], 500, {
           color: 'green',
-          fillColor: '#30f',
+          fillColor: '#0f0',
           fillOpacity: 0.5
       });
       iPointMarkers_.push(circle)
     })
     var iPointMarkers = L.layerGroup(iPointMarkers_).addTo(map);
-    overlays["iPoints"] = iPointMarkers;
+    overlays["Points - Intersection"] = iPointMarkers;
 
     L.control.layers(baseLayers, overlays).addTo(map);
 
