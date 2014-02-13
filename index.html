@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Testmap</title>
+  <meta charset="utf-8" />
+  <script src="leaflet.js"></script>
+  <script src="d3.v3.min.js"></script>
+  <script src="topojson.v1.min.js"></script>
+  <style>
+  @import url(leaflet.css);
+  </style>
+</head>
+<body>
+  <h2>Liveview of current status</h2>
+  <div id="map" style="width: 960px; height: 500px"></div>
+  <script>
+  var map = L.map('map').setView([43.55, -71.71], 7);
+  var toolserver = L.tileLayer('http://{s}.www.toolserver.org/tiles/bw-mapnik/{z}/{x}/{y}.png');
+  var stamen = L.tileLayer('http://{s}.tile.stamen.com/toner/{z}/{x}/{y}.png', {attribution: 'Add some attributes here!'}).addTo(map);
+  var baseLayers = {"stamen": stamen, "toolserver-mapnik":toolserver};
+
+  var overlays = {};
+
+  d3.json("all_features_topo.json", function(error, topology) {
+    // add the lines to the map
+    var lines = topojson.feature(topology, topology.objects.lines);
+    var linesTopoJSON = [lines];
+    var geojsonLines = L.geoJson(linesTopoJSON).addTo(map);
+    overlays["Lines"] = geojsonLines;
+
+    // add the points to the map
+    var points = topojson.feature(topology, topology.objects.points);
+    var pointMarkers_ = [];
+    points.features.forEach(function(d,i){
+      var coords = d.geometry.coordinates;
+      var circle = L.circle([coords[1], coords[0]], 500, {
+          color: 'red',
+          fillColor: '#f03',
+          fillOpacity: 0.5
+      });
+      pointMarkers_.push(circle)
+    })
+    var pointMarkers = L.layerGroup(pointMarkers_).addTo(map);
+    overlays["Points - Input"] = pointMarkers;
+
+    // add the intersection points to the map
+    var iPoints = topojson.feature(topology, topology.objects.intersection_points);
+    var iPointMarkers_ = [];
+    iPoints.features.forEach(function(d,i){
+      var coords = d.geometry.coordinates;
+      var circle = L.circle([coords[1], coords[0]], 500, {
+          color: 'green',
+          fillColor: '#0f0',
+          fillOpacity: 0.5
+      });
+      iPointMarkers_.push(circle)
+    })
+    var iPointMarkers = L.layerGroup(iPointMarkers_).addTo(map);
+    overlays["Points - Intersection"] = iPointMarkers;
+
+    L.control.layers(baseLayers, overlays).addTo(map);
+
+  })
+  </script>
+ </body>
+</html>
