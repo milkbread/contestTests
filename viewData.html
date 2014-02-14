@@ -57,6 +57,14 @@
     var iPointMarkers = L.layerGroup(iPointMarkers_).addTo(map);
     overlays["Points - Intersection"] = iPointMarkers;
 
+    var treeRectangles = topojson.feature(topology, topology.objects.rectangles);
+    var rectangles = L.geoJson(treeRectangles).addTo(map)
+    overlays["Tree rectangles"] = rectangles;
+
+    var bufferedPoints = topojson.feature(topology, topology.objects.buffered_points);
+    var buffers = L.geoJson(bufferedPoints).addTo(map)
+    overlays["Buffers"] = buffers;
+
     L.control.layers(baseLayers, overlays).addTo(map);
 
   })
