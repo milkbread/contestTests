@@ -154,9 +154,9 @@ def main(argv=None):
 
 	intersection_points = findCPointBySimpleBuffer(lines, points, 0.05)
 
-	#saveToGeoJSON('points.json',points)
-	#saveToGeoJSON('lines.json',lines)
-	#saveToGeoJSON('intersection_points.json',intersection_points)
+	saveToGeoJSON('points.json',points)
+	saveToGeoJSON('lines.json',lines)
+	saveToGeoJSON('intersection_points.json',intersection_points)
 
 	saveToGeoJSON('rectangles.json',rectangles)
 	saveToGeoJSON('buffered_points.json',buffered_points)
