@@ -11,7 +11,6 @@
   </style>
 </head>
 <body>
-  <h2>Liveview of current status</h2>
   <div id="map" style="width: 960px; height: 500px"></div>
   <script>
   var map = L.map('map').setView([43.55, -71.71], 7);
@@ -57,6 +56,14 @@
     })
     var iPointMarkers = L.layerGroup(iPointMarkers_).addTo(map);
     overlays["Points - Intersection"] = iPointMarkers;
+
+    var treeRectangles = topojson.feature(topology, topology.objects.rectangles);
+    var rectangles = L.geoJson(treeRectangles).addTo(map)
+    overlays["Tree rectangles"] = rectangles;
+
+    var bufferedPoints = topojson.feature(topology, topology.objects.buffered_points);
+    var buffers = L.geoJson(bufferedPoints).addTo(map)
+    overlays["Buffers"] = buffers;
 
     L.control.layers(baseLayers, overlays).addTo(map);
 
