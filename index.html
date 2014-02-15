@@ -11,6 +11,7 @@
   </style>
 </head>
 <body>
+  <h2>This is a live-demo of the current tests</h2>
   <div id="map" style="width: 960px; height: 500px"></div>
   <script>
   var map = L.map('map').setView([43.55, -71.71], 7);
@@ -58,11 +59,15 @@
     overlays["Points - Intersection"] = iPointMarkers;
 
     var treeRectangles = topojson.feature(topology, topology.objects.rectangles);
-    var rectangles = L.geoJson(treeRectangles).addTo(map)
+    var rectangles = L.geoJson(treeRectangles, {
+        style : {color: 'red'}
+    }).addTo(map)
     overlays["Tree rectangles"] = rectangles;
 
     var bufferedPoints = topojson.feature(topology, topology.objects.buffered_points);
-    var buffers = L.geoJson(bufferedPoints).addTo(map)
+    var buffers = L.geoJson(bufferedPoints, {
+        style : {color: 'green'}
+    }).addTo(map)
     overlays["Buffers"] = buffers;
 
     L.control.layers(baseLayers, overlays).addTo(map);
