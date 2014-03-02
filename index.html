@@ -25,7 +25,7 @@
     // add the lines to the map
     var lines = topojson.feature(topology, topology.objects.lines);
     var linesTopoJSON = [lines];
-    var geojsonLines = L.geoJson(linesTopoJSON).addTo(map);
+    var geojsonLines = L.geoJson(linesTopoJSON, {onEachFeature: onEachFeature}).addTo(map);
     overlays["Lines"] = geojsonLines;
 
     // add the points to the map
@@ -34,6 +34,7 @@
     points.features.forEach(function(d,i){
       var coords = d.geometry.coordinates;
       var circle = L.circle([coords[1], coords[0]], 500, {
+          onEachFeature: onEachFeature,
           color: 'red',
           fillColor: '#f03',
           fillOpacity: 0.5
@@ -55,24 +56,49 @@
       });
       iPointMarkers_.push(circle)
     })
-    var iPointMarkers = L.layerGroup(iPointMarkers_).addTo(map);
+    var iPointMarkers = L.layerGroup(iPointMarkers_);
     overlays["Points - Intersection"] = iPointMarkers;
+
+    // add the intersection points, found by RTree, to the map
+    var iPoints2 = topojson.feature(topology, topology.objects.intersection_points_r_tree);
+    var iPointMarkers_2 = [];
+    iPoints2.features.forEach(function(d,i){
+      var coords = d.geometry.coordinates;
+      var circle = L.circle([coords[1], coords[0]], 500, {
+          color: 'green',
+          fillColor: '#0f0',
+          fillOpacity: 0.5
+      });
+      iPointMarkers_2.push(circle)
+    })
+    var iPointMarkers2 = L.layerGroup(iPointMarkers_2);
+    overlays["Points - Intersection by RTree"] = iPointMarkers2;
+
 
     var treeRectangles = topojson.feature(topology, topology.objects.rectangles);
     var rectangles = L.geoJson(treeRectangles, {
+        onEachFeature: onEachFeature,
         style : {color: 'red'}
-    }).addTo(map)
+    });
     overlays["Tree rectangles"] = rectangles;
 
     var bufferedPoints = topojson.feature(topology, topology.objects.buffered_points);
     var buffers = L.geoJson(bufferedPoints, {
+        onEachFeature: onEachFeature,
         style : {color: 'green'}
-    }).addTo(map)
+    });
     overlays["Buffers"] = buffers;
 
     L.control.layers(baseLayers, overlays).addTo(map);
 
   })
+
+  function onEachFeature(feature, layer) {
+      // does this feature have a property named popupContent?
+      if (feature.id) {
+          layer.bindPopup("ID: " + feature.id);
+      }
+  }
   </script>
  </body>
 </html>
