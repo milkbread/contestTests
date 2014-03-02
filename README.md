@@ -7,6 +7,8 @@ python simplify.py
 ```
 
 Transform coordinates to geographical coordinates by adding the 'EPSG' of the original data
+
+*Currently, this is [54004](http://spatialreference.org/ref/esri/54004/)*
 ```python
 python simplify.py 54004
 ```
