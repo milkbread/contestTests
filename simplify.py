@@ -8,6 +8,22 @@ from shapely.geometry import Point, LineString, box
 
 from pyrtree import RTree, Rect
 
+def findCPointByRTree(points, r_tree):
+
+	intersection_points = []
+   	buffered_points = []
+   	for point_ in points:
+   		real_point_res = [r.leaf_obj() for r in r_tree.query_point( (point_.x,point_.y) ) if r.is_leaf()]
+   		distance = real_point_res[0].project(point_)
+   		buffered_point = point_.buffer(0.09)
+   		buffered_points.append(buffered_point)
+   		# if line_.intersects(buffered_point):
+   		# 	intersection = line_.intersection(buffered_point)
+   		# 	intersection_point = intersection.interpolate(distance+1.5)
+   		# 	intersection_points.append(intersection_point)
+
+   	return intersection_points, buffered_points
+
 def findCPointBySimpleBuffer(lines, points, buffer_distance=0):
 	intersection_points = []
 	count0 = 0
@@ -36,12 +52,15 @@ def transform(geom, epsg):
 	return geom
 
 def readInput(data, transform_ = None):
+	r_tree = RTree()
 	geometries = []
+	real_index_list = []
 	for line in data.readlines():
 		# check if we have to remove two or three chars from line
 		index_ = 2 if line[1:2]==':' else 3
 		# remove first 'index'-chars
 		gml_ = line[index_:]
+		real_index_list.append(line[:index_].replace(':',''))
 		# convert to ogr-geometry
 		if transform_:
 			ogr_geometry = transform(ogr.CreateGeometryFromGML(gml_), transform_)
@@ -52,31 +71,42 @@ def readInput(data, transform_ = None):
 			shapely_geometry = Point(ogr_geometry.GetX(),ogr_geometry.GetY())
 		elif ogr_geometry.GetGeometryType() == 2:
 			shapely_geometry = LineString(ogr_geometry.GetPoints())
+			r_tree.insert(shapely_geometry,Rect(shapely_geometry.bounds[0],shapely_geometry.bounds[1],shapely_geometry.bounds[2],shapely_geometry.bounds[3]))
+
 		geometries.append(shapely_geometry)
-	return geometries
+	if ogr_geometry.GetGeometryType() == 1:
+		return geometries, real_index_list
+	elif ogr_geometry.GetGeometryType() == 2:
+		return geometries, real_index_list, r_tree
 
 def getOnePointFromIntersection(intersection):
 	# ToDo:: replace this method with a more convenient
 	return intersection.representative_point()
 
-def saveToGeoJSON(filename, geometries):
+def saveToGeoJSON(filename, geometries, indizes=None):
 	featcoll_dummy = {
 	    "type": "FeatureCollection",
 	    "features": []
 	}
 
 	features = []
-	for geom in geometries:
+	for i in range(len(geometries)):
+		id = indizes[i] if indizes else i
+		geom = geometries[i]
+
 		feauture_dummy = {
 		  "type": "Feature",
 		  "geometry": {
 		    "type": "",
 		    "coordinates": []
 		  },
-		  "properties": {}
+		  "properties": {
+		  	'id':None
+		  }
 		}
 		# add geometry to geoJSON-geometry-dummy
 		geojson = feauture_dummy.copy()
+		geojson['properties']['id'] = id
 		geojson['geometry']['type'] = geom.geometryType()
 		# cleaning for GeoJSON...by replacing '(...)' with '[...]'
 		geojson_points = []
@@ -102,6 +132,13 @@ def saveToGeoJSON(filename, geometries):
 		file.write(json.dumps(featurecoll_geojson, indent=4))
 	file.close()
 
+def exportRectangles(lines):
+	rectangles = []
+	for line_ in lines:
+		b = box(line_.bounds[0],line_.bounds[1],line_.bounds[2],line_.bounds[3])
+		rectangles.append(b)
+	return rectangles
+
 def main(argv=None):
 	if argv is None:
 		argv = sys.argv
@@ -113,55 +150,22 @@ def main(argv=None):
 	lines_input = open('lines_out.txt', 'r')
 	points_input = open('points_out.txt', 'r')
 
-	lines = readInput(lines_input, transform_)
-	points = readInput(points_input, transform_)
+	lines, lines_indizes, lines_r_tree = readInput(lines_input, transform_)
+	points, points_indizes = readInput(points_input, transform_)
 
-	'''t = RTree()
-   	t.insert(some_kind_of_object,Rect(min_x,min_y,max_x,max_y))
-   	point_res = t.query_point( (x,y) )
-   	rect_res = t.query_rect( Rect(x,y,xx,yy) )'''
-
-   	t = RTree()
-   	rectangles = []
-   	for line_ in lines:
-   		#print dir(line_)
-   		#print line_.bounds
-   		b = box(line_.bounds[0],line_.bounds[1],line_.bounds[2],line_.bounds[3])
-   		rectangles.append(b)
-   		#print list(b.exterior.coords)
-   		t.insert(line_,Rect(line_.bounds[0],line_.bounds[1],line_.bounds[2],line_.bounds[3]))
-
-   	intersection_points = []
-   	buffered_points = []
-   	for point_ in points:
-   		#print dir(point_)
-   		#print point_.x, point_.y
-   		#point_res = t.query_point( (point_.x,point_.y) )
-   		#print point_res
-   		real_point_res = [r.leaf_obj() for r in t.query_point( (point_.x,point_.y) ) if r.is_leaf()]
-   		#Point(ogr_geometry.GetX(),ogr_geometry.GetY())
-   		distance = real_point_res[0].project(point_)
-   		#print distance
-   		buffered_point = point_.buffer(0.09)
-   		print real_point_res[0].intersects(buffered_point)
-   		buffered_points.append(buffered_point)
-   		'''if line_.intersects(buffered_point):
-   			intersection = line_.intersection(buffered_point)
-   			#print dir(intersection)
-   			intersection_point = intersection.interpolate(distance+1.5)
-   			intersection_points.append(intersection_point)
-'''
+	intersection_points_r_tree, buffered_points = findCPointByRTree(points, lines_r_tree)
 
 	intersection_points = findCPointBySimpleBuffer(lines, points, 0.05)
 
-	saveToGeoJSON('points.json',points)
-	saveToGeoJSON('lines.json',lines)
+	saveToGeoJSON('points.json',points, points_indizes)
+	saveToGeoJSON('lines.json',lines, lines_indizes)
 	saveToGeoJSON('intersection_points.json',intersection_points)
+	saveToGeoJSON('intersection_points_r_tree.json',intersection_points_r_tree)
 
-	saveToGeoJSON('rectangles.json',rectangles)
-	saveToGeoJSON('buffered_points.json',buffered_points)
+	saveToGeoJSON('rectangles.json',exportRectangles(lines), lines_indizes)
+	saveToGeoJSON('buffered_points.json',buffered_points, points_indizes)
 
-	os.system("topojson -o all_features_topo.json points.json lines.json intersection_points.json rectangles.json buffered_points.json");
+	os.system("topojson --id-property id -o all_features_topo.json points.json lines.json intersection_points.json intersection_points_r_tree.json rectangles.json buffered_points.json");
 
 if __name__ == "__main__":
     sys.exit(main())
