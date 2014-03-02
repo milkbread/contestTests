@@ -1,12 +1,30 @@
 
+# Documentation
+
+Basic call
+```python
+python simplify.py
+```
+
+Transform coordinates to geographical coordinates by adding the 'EPSG' of the original data
+```python
+python simplify.py 54004
+```
+
+# Contest
+
+Homepage: http://mypages.iit.edu/~xzhang22/GISCUP2014/index.php
+
+## Readme of Dataset
+
 This zip file contains 3 txt files, one .png file and this README file.
 
 lines_out.txt: This file contains the input Line geometries that form the
                boundary of the counties in NH state, USA.
 points_out.txt: This file contains input Point geometries  that are used to
                 constrain the line simplification process.
-                Notice the relationship of each point to the input set of 
-                line geometries. After simplification this relationship 
+                Notice the relationship of each point to the input set of
+                line geometries. After simplification this relationship
                 should be preserved.
 
 lines_simple_out.txt: This file containes the result of a valid simplification.
