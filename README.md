@@ -20,7 +20,10 @@ python simplify.py 54004
 *Have to be installed locally on the system*
 
 * [osgeo](http://trac.osgeo.org/gdal/wiki/GdalOgrInPython)
+  ([cookbook](http://toblerity.org/shapely/manual.html#linestrings))
+
 * [shapely](https://pypi.python.org/pypi/Shapely)
+  ([manual](http://pcjericks.github.io/py-gdalogr-cookbook/geometry.html#))
 
 ### Included
 * [pyrtree](http://code.google.com/p/pyrtree/)
