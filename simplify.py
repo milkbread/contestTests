@@ -147,8 +147,8 @@ def main(argv=None):
 	except:
 		transform_ = None
 
-	lines_input = open('lines_out.txt', 'r')
-	points_input = open('points_out.txt', 'r')
+	lines_input = open('training_data/lines_out.txt', 'r')
+	points_input = open('training_data/points_out.txt', 'r')
 
 	lines, lines_indizes, lines_r_tree = readInput(lines_input, transform_)
 	points, points_indizes = readInput(points_input, transform_)
