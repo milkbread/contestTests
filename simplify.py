@@ -157,15 +157,15 @@ def main(argv=None):
 
 	intersection_points = findCPointBySimpleBuffer(lines, points, 0.05)
 
-	saveToGeoJSON('points.json',points, points_indizes)
-	saveToGeoJSON('lines.json',lines, lines_indizes)
-	saveToGeoJSON('intersection_points.json',intersection_points)
-	saveToGeoJSON('intersection_points_r_tree.json',intersection_points_r_tree)
+	saveToGeoJSON('results/points.json',points, points_indizes)
+	saveToGeoJSON('results/lines.json',lines, lines_indizes)
+	saveToGeoJSON('results/intersection_points.json',intersection_points)
+	saveToGeoJSON('results/intersection_points_r_tree.json',intersection_points_r_tree)
 
-	saveToGeoJSON('rectangles.json',exportRectangles(lines), lines_indizes)
-	saveToGeoJSON('buffered_points.json',buffered_points, points_indizes)
+	saveToGeoJSON('results/rectangles.json',exportRectangles(lines), lines_indizes)
+	saveToGeoJSON('results/buffered_points.json',buffered_points, points_indizes)
 
-	os.system("topojson --id-property id -o all_features_topo.json points.json lines.json intersection_points.json intersection_points_r_tree.json rectangles.json buffered_points.json");
+	os.system("topojson --id-property id -o results/all_features_topo.json results/points.json results/lines.json results/intersection_points.json results/intersection_points_r_tree.json results/rectangles.json results/buffered_points.json");
 
 if __name__ == "__main__":
     sys.exit(main())

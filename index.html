@@ -21,7 +21,7 @@
 
   var overlays = {};
 
-  d3.json("all_features_topo.json", function(error, topology) {
+  d3.json("results/all_features_topo.json", function(error, topology) {
     // add the lines to the map
     var lines = topojson.feature(topology, topology.objects.lines);
     var linesTopoJSON = [lines];
