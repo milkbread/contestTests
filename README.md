@@ -11,6 +11,18 @@ Transform coordinates to geographical coordinates by adding the 'EPSG' of the or
 python simplify.py 54004
 ```
 
+## Dependencies
+
+### System
+
+*Have to be installed locally on the system*
+
+* [osgeo](http://trac.osgeo.org/gdal/wiki/GdalOgrInPython)
+* [shapely](https://pypi.python.org/pypi/Shapely)
+
+### Included
+* [pyrtree](http://code.google.com/p/pyrtree/)
+
 # Contest
 
 Homepage: http://mypages.iit.edu/~xzhang22/GISCUP2014/index.php
