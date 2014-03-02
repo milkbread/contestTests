@@ -11,6 +11,7 @@
   </style>
 </head>
 <body>
+  <h2>This is a live-demo of the current tests</h2>
   <div id="map" style="width: 960px; height: 500px"></div>
   <script>
   var map = L.map('map').setView([43.55, -71.71], 7);
@@ -75,23 +76,29 @@
 
 
     var treeRectangles = topojson.feature(topology, topology.objects.rectangles);
-    var rectangles = L.geoJson(treeRectangles, {onEachFeature: onEachFeature});
+    var rectangles = L.geoJson(treeRectangles, {
+        onEachFeature: onEachFeature,
+        style : {color: 'red'}
+    });
     overlays["Tree rectangles"] = rectangles;
 
     var bufferedPoints = topojson.feature(topology, topology.objects.buffered_points);
-    var buffers = L.geoJson(bufferedPoints, {onEachFeature: onEachFeature});
+    var buffers = L.geoJson(bufferedPoints, {
+        onEachFeature: onEachFeature,
+        style : {color: 'green'}
+    });
     overlays["Buffers"] = buffers;
 
     L.control.layers(baseLayers, overlays).addTo(map);
 
   })
 
-function onEachFeature(feature, layer) {
-    // does this feature have a property named popupContent?
-    if (feature.id) {
-        layer.bindPopup("ID: " + feature.id);
-    }
-}
+  function onEachFeature(feature, layer) {
+      // does this feature have a property named popupContent?
+      if (feature.id) {
+          layer.bindPopup("ID: " + feature.id);
+      }
+  }
   </script>
  </body>
 </html>
