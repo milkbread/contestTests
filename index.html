@@ -28,6 +28,14 @@
     var geojsonLines = L.geoJson(linesTopoJSON, {onEachFeature: onEachFeature}).addTo(map);
     overlays["Lines"] = geojsonLines;
 
+    var badly_simple_lines_ = topojson.feature(topology, topology.objects.badly_simple_lines);
+    var badly_simple_lines__ = [badly_simple_lines_];
+    var badly_simple_lines = L.geoJson(badly_simple_lines__, {
+        onEachFeature: onEachFeature,
+        color: 'red'
+    });
+    overlays["Simplified lines - badly"] = badly_simple_lines;
+
     // add the points to the map
     var points = topojson.feature(topology, topology.objects.points);
     var pointMarkers_ = [];

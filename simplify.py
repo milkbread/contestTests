@@ -7,6 +7,7 @@ from osgeo import ogr, osr
 from shapely.geometry import Point, LineString, box
 
 from pyrtree import RTree, Rect
+from dp import simplify_points
 
 def findCPointByRTree(points, r_tree, buffer_distance=0):
 
@@ -184,6 +185,14 @@ def main(argv=None):
 
 	saveToGeoJSON('results/points.json',points, points_indizes)
 	saveToGeoJSON('results/lines.json',lines, lines_indizes)
+
+	simple_lines = []
+	for line in lines:
+		simple_coords = simplify_points(line.coords, 0.5)
+		line.coords = simple_coords
+		simple_lines.append(line)
+	saveToGeoJSON('results/badly_simple_lines.json',simple_lines, lines_indizes)
+
 	saveToGeoJSON('results/intersection_points.json',intersection_points)
 	saveToGeoJSON('results/intersections_r_tree.json',intersections_r_tree)
 
@@ -197,7 +206,11 @@ def main(argv=None):
 		 results/intersection_points.json \
 		 results/intersections_r_tree.json \
 		 results/rectangles.json \
-		 results/buffered_points.json");
+		 results/buffered_points.json \
+		 results/badly_simple_lines.json");
+
+	# Simplify
+	# -s 0.000001 \
 
 if __name__ == "__main__":
     sys.exit(main())
