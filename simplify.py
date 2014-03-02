@@ -165,7 +165,14 @@ def main(argv=None):
 	saveToGeoJSON('results/rectangles.json',exportRectangles(lines), lines_indizes)
 	saveToGeoJSON('results/buffered_points.json',buffered_points, points_indizes)
 
-	os.system("topojson --id-property id -o results/all_features_topo.json results/points.json results/lines.json results/intersection_points.json results/intersection_points_r_tree.json results/rectangles.json results/buffered_points.json");
+	os.system("topojson --id-property id \
+		 -o results/all_features_topo.json \
+		 results/points.json \
+		 results/lines.json \
+		 results/intersection_points.json \
+		 results/intersection_points_r_tree.json \
+		 results/rectangles.json \
+		 results/buffered_points.json");
 
 if __name__ == "__main__":
     sys.exit(main())
