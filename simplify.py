@@ -192,6 +192,7 @@ def main(argv=None):
 
 	os.system("topojson --id-property id \
 		 -o results/all_features_topo.json \
+		 -s 0.00000005 \
 		 results/points.json \
 		 results/lines.json \
 		 results/intersection_points.json \

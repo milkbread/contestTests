@@ -38,10 +38,34 @@
     var _lines_ = data.lines;
     var topology = data.topology;
     // add the lines to the map
-    var lines = topojson.feature(topology, topology.objects.lines);
+    var simplified_lines = topojson.feature(topology, topology.objects.lines);
     var linesTopoJSON = [_lines_];
-    var geojsonLines = L.geoJson(linesTopoJSON, {onEachFeature: onEachFeature}).addTo(map);
-    overlays["Lines"] = geojsonLines;
+    var geojsonLines = L.geoJson(linesTopoJSON, {
+        onEachFeature: onEachFeature,
+        style:{'color': 'blue'}
+    }).addTo(map);
+    overlays["Lines - original"] = geojsonLines;
+
+    var simpleLines = L.geoJson([simplified_lines], {
+        onEachFeature: onEachFeature,
+        style:{'color': 'green'}
+    }).addTo(map);
+    overlays["Lines - simplified as arcs"] = simpleLines;
+
+    var badly_simple_lines_ = topojson.feature(topology, topology.objects.badly_simple_lines);
+    var badly_simple_lines__ = [badly_simple_lines_];
+    var badly_simple_lines = L.geoJson(badly_simple_lines__, {
+        onEachFeature: onEachFeature,
+        style:{'color': 'red'}
+    });
+    overlays["Lines - simplified as lines"] = badly_simple_lines;
+
+    var intersection_r_tree = topojson.feature(topology, topology.objects.intersections_r_tree);
+    var intersection_r_tree_ = L.geoJson(intersection_r_tree, {
+        onEachFeature: onEachFeature,
+        style : {color: 'red'}
+    });
+    overlays["Lines - Intersection by RTree"] = intersection_r_tree_;
 
     // add the points to the map
     var points = topojson.feature(topology, topology.objects.points);
@@ -50,14 +74,12 @@
       var coords = d.geometry.coordinates;
       var circle = L.circle([coords[1], coords[0]], 500, {
           onEachFeature: onEachFeature,
-          color: 'red',
-          fillColor: '#f03',
-          fillOpacity: 0.5
+          color: 'blue',
       });
       pointMarkers_.push(circle)
     })
     var pointMarkers = L.layerGroup(pointMarkers_).addTo(map);
-    overlays["Points - Input"] = pointMarkers;
+    overlays["Points - original"] = pointMarkers;
 
     // add the intersection points to the map
     var iPoints = topojson.feature(topology, topology.objects.intersection_points);
@@ -65,37 +87,34 @@
     iPoints.features.forEach(function(d,i){
       var coords = d.geometry.coordinates;
       var circle = L.circle([coords[1], coords[0]], 500, {
-          color: 'green',
-          fillColor: '#0f0',
-          fillOpacity: 0.5
+          color: 'red',
       });
       iPointMarkers_.push(circle)
     })
     var iPointMarkers = L.layerGroup(iPointMarkers_);
-    overlays["Points - Intersection"] = iPointMarkers;
+    overlays["Points - Intersection (simple buffer)"] = iPointMarkers;
 
-    var intersection_r_tree = topojson.feature(topology, topology.objects.intersections_r_tree);
-    var intersection_r_tree_ = L.geoJson(intersection_r_tree, {
-        onEachFeature: onEachFeature,
-        style : {color: 'green'}
-    });
-    overlays["Intersections by RTree"] = intersection_r_tree_;
+    var lContol = L.control.layers(baseLayers, overlays, {autoZIndex:true}).addTo(map);
 
-    var treeRectangles = topojson.feature(topology, topology.objects.rectangles);
-    var rectangles = L.geoJson(treeRectangles, {
-        onEachFeature: onEachFeature,
-        style : {color: 'red'}
-    });
-    overlays["Tree rectangles"] = rectangles;
+    d3.json("results/rectangles.json", function(error, rectangles_) {
+        var treeRectangles = rectangles_;//topojson.feature(topology, topology.objects.rectangles);
+        var rectangles = L.geoJson(treeRectangles, {
+            onEachFeature: onEachFeature,
+            style : {color: 'yellow'}
+        });
+        // overlays["Tree rectangles"] = rectangles;
+        lContol.addOverlay(rectangles, "Tree rectangles")
+    })
 
-    var bufferedPoints = topojson.feature(topology, topology.objects.buffered_points);
-    var buffers = L.geoJson(bufferedPoints, {
-        onEachFeature: onEachFeature,
-        style : {color: 'yellow'}
-    });
-    overlays["Buffers"] = buffers;
-
-    L.control.layers(baseLayers, overlays).addTo(map);
+    d3.json("results/buffered_points.json", function(error, buffered_points_) {
+        var bufferedPoints = buffered_points_;//topojson.feature(topology, topology.objects.buffered_points);
+        var buffers = L.geoJson(bufferedPoints, {
+            onEachFeature: onEachFeature,
+            style : {color: 'yellow'}
+        });
+        overlays["Buffers"] = buffers;
+        lContol.addOverlay(buffers, "Buffers")
+    })
 
   }
 
