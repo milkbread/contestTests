@@ -21,10 +21,25 @@
 
   var overlays = {};
 
-  d3.json("results/all_features_topo.json", function(error, topology) {
+  loadData();
+
+  function loadData() {
+    var data = {topology: null, lines: null};
+    d3.json("results/all_features_topo.json", function(error, topology) {
+        data.topology = topology;
+        d3.json("results/lines.json", function(error, lines) {
+            data.lines = lines;
+            renderFeatures(data);
+        })
+    })
+  }
+
+  function renderFeatures(data) {
+    var _lines_ = data.lines;
+    var topology = data.topology;
     // add the lines to the map
     var lines = topojson.feature(topology, topology.objects.lines);
-    var linesTopoJSON = [lines];
+    var linesTopoJSON = [_lines_];
     var geojsonLines = L.geoJson(linesTopoJSON, {onEachFeature: onEachFeature}).addTo(map);
     overlays["Lines"] = geojsonLines;
 
@@ -82,7 +97,7 @@
 
     L.control.layers(baseLayers, overlays).addTo(map);
 
-  })
+  }
 
   function onEachFeature(feature, layer) {
       // does this feature have a property named popupContent?
