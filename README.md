@@ -25,6 +25,9 @@ python simplify.py 54004
 * [shapely](https://pypi.python.org/pypi/Shapely)
   ([manual](http://pcjericks.github.io/py-gdalogr-cookbook/geometry.html#))
 
+* [topojson](https://github.com/mbostock/topojson/wiki/Installation)
+  ([Windows7](https://gist.github.com/defiantShaun/6814329))
+
 ### Included
 * [pyrtree](http://code.google.com/p/pyrtree/)
 
